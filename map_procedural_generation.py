@@ -168,8 +168,8 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
 
 
 def main():  # TODO: Make menu, let user choose seed and options, add world saving option, make tiled?(voronoi diagram),
-    #           add rivers and trails?, biomes?, seasons\day night cycle?, add Git, add round gradient,
-    #           add path finding?, add objective?, find usage
+    #           add rivers and trails?, biomes?, seasons\day night cycle?, add round gradient, add path finding?,
+    #           add objective?, find usage
     width, height = 800, 600  # resolution in pixels
     moving_speed = 40  # in pixels
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
