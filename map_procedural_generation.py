@@ -1,15 +1,30 @@
+import math
+import sys
+
+import numpy as np
 import pygame
 from noise import pnoise2
-import numpy as np
-import sys
-import math
-
 
 # from time import time
 # from PIL import Image
 
+"""
+This project is about making terrain using procedural generation utilizing perlin noise and other techniques.
+Working towards making both infinite and finite "worlds" based on different seeds generation
+
+WIP: adding a menu, experimenting with voronoi diagrams instead of each pixel coloring (will add certain style to the
+     terrain and might improve running time, also trying to differentiate between an infinite map and a finite map,
+     the finite map should use the round gradient and might add several special details that are more complex to add
+     to an infinite map
+"""
+
 
 def create_round_gradient(map_width=800, map_height=600):
+    """
+    Creates a 2D matrix with float values between 0 and 1 in a round shape (1 in the center and then lowering)
+
+    Logic: calculating the distance from the center and inverting them
+    """
     gradient_map = np.zeros((map_width, map_height))
     for i in range(map_width):
         for j in range(map_height):
@@ -19,6 +34,15 @@ def create_round_gradient(map_width=800, map_height=600):
 
 
 def create_perlin_map():
+    """
+    Creates a 2D matrix with values between -0.5 and 0.5 using perlin noise
+
+    scale: determines at what "distance" to view the noisemap
+    octaves: mean the number of passes/layers of the algorithm. Each pass adds more detail
+    persistence: determines how much each octave contributes to the overall shape (adjusts amplitude)
+    lacunarity: determines how much detail is added or removed at each octave (adjusts frequency)
+    seed: makes a whole different perlin map, and there for a different "world"
+    """
     width, height = 800, 600
     scale = 100.0
     octaves = 6
@@ -29,20 +53,28 @@ def create_perlin_map():
     for i in range(height):
         for j in range(width):
             noise_map[i][j] = pnoise2(i / scale, j / scale, octaves=octaves, persistence=persistence,
-                                      lacunarity=lacunarity, repeatx=1024, repeaty=1024, base=42)
+                                      lacunarity=lacunarity, base=42)
     return noise_map
 
 
 def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
-    # scale determines at what "distance" to view the noisemap
-    # octaves mean the number of passes/layers of the algorithm. Each pass adds more detail
-    # persistence determines how much each octave contributes to the overall shape (adjusts amplitude)
-    # lacunarity determines how much detail is added or removed at each octave (adjusts frequency)
-    # seed makes a whole different perlin map, and there for a different "world"
-    # repeatx, repeaty- specifies the interval along each axis when the noise values repeat.
-    #                   This can be used as the tile size for creating tileable textures
 
+    """
+    Creates a 2D matrix with RGB values, representing an image of terrain
+
+    Logic: assigns a value for each pixel using 2D perlin noise and then assigns a color to the pixel according
+           to the value
+
+    Complexity: creating the matrix by calculating the perlin noise values and assigning colors in the same loop saves
+                time by not having to iterate over the entire matrix twice
+
+    scale: determines at what "distance" to view the noisemap
+    octaves: mean the number of passes/layers of the algorithm. Each pass adds more detail
+    persistence: determines how much each octave contributes to the overall shape (adjusts amplitude)
+    lacunarity: determines how much detail is added or removed at each octave (adjusts frequency)
+    seed: makes a whole different perlin map, and there for a different "world"
+    """
     colors = {"light_blue": (27, 127, 196),
               "medium_blue": (20, 103, 199),
               "blue": (11, 74, 212),
@@ -104,6 +136,19 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
     return game_map
 
 
+"""
+The following 4 functions allow movement within the terrain
+ 
+Logic: by removing a slice of width/height in a certain amount of pixels and calculating the next slice in the same size
+
+Complexity: by removing and calculating slices instead of the entire map again this gains a massive performance boost
+
+moving_speed: the size of each slice in pixels
+horizontal_offset: the user's horizontal coordinates displacement from the center (0, 0) in pixels
+vertical_offset: the user's vertical coordinates displacement from the center (0, 0) in pixels
+"""
+
+
 def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[:, moving_speed:]
     game_map = np.hstack(
@@ -136,6 +181,13 @@ def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical
 
 
 def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
+    """
+    Creates a window using the pygame module, then calls the relevant functions in order to make a terrain map and
+    allowing movement within the terrain
+
+    width: width resolution in pixels
+    height: height resolution in pixels
+    """
     game_map = create_colored_map(width, height)  # create_gradient_map(width, height)
     # im = Image.fromarray(game_map)
     # im.show()
@@ -167,9 +219,12 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
         pygame.display.flip()
 
 
-def main():  # TODO: Make menu, let user choose seed and options, add world saving option, make tiled?(voronoi diagram),
-    #           add rivers and trails?, biomes?, seasons\day night cycle?, add round gradient, add path finding?,
-    #           add objective?, find usage
+def main():
+    """
+     TODO: Make menu, let user choose seed and options, add world saving option, make tiled?(voronoi diagram),
+           add rivers and trails?, biomes?, seasons/day night cycle?, add round gradient, add path finding?,
+           add objective?, find usage
+    """
     width, height = 800, 600  # resolution in pixels
     moving_speed = 40  # in pixels
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
