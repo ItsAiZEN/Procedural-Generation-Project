@@ -14,15 +14,16 @@ from noise import pnoise2
 # from PIL import Image
 
 """
-TODO:   1. add a menu, 
+TODO:   1. add a menu, let choose resolution and load worlds, choose mode
         2. try voronoi diagrams instead of pixel coloring
         3. differentiate between an infinite map and a finite map
         4. add UI, let users choose lacunarity, octaves, seed and so on 
-        5. add ability to save, both seed and coordinates and of resolution and so forth
-        6. add rivers and trails
+        5. add ability to save, both seed and coordinates, resolution and more
+        6. add rivers and trails (using path finding/gradient decent or voronoi edges?)
         7. implement round gradient
         8. add biomes?, seasons/day night cycle?
         9. add path finding?, add objective?, find usage?
+        10. split coloring into an individual function
 """
 
 
@@ -64,6 +65,70 @@ def create_perlin_map():
     return noise_map
 
 
+def color_by_amplitude(amplitude, threshold):
+    """
+    assigns RGB color by amplitude
+
+    amplitude: value usually received from perlin noise
+    """
+
+    color = (0, 0, 0)
+
+    colors = {"light_blue": (27, 127, 196),
+              "medium_blue": (20, 103, 199),
+              "blue": (11, 74, 212),
+              "dark_blue": (11, 65, 181),
+              "light_sand": (205, 182, 115),
+              "sand": (199, 149, 95),
+              "dark_sand": (172, 130, 78),
+              "light_green": (106, 171, 56),
+              "green": (56, 158, 35),
+              "dark_green": (28, 140, 24),
+              "darkest_green": (35, 124, 24),
+              "dark_mountain": (90, 160, 79),
+              "mountain": (120, 120, 120),
+              "medium_mountain": (107, 107, 107),
+              "light_mountain": (89, 89, 89),
+              "snow": (255, 255, 255)}
+
+    if amplitude < -0.2 + threshold:
+        color = colors["dark_blue"]
+    elif amplitude < -0.075 + threshold:
+        color = colors["blue"]
+    elif amplitude < 0.0 + threshold:
+        color = colors["medium_blue"]
+    elif amplitude < 0.05 + threshold:
+        color = colors["light_blue"]
+    # if amplitude < 0.05:
+    #     color = (0, 0, 100 + abs(300 * amplitude))
+    elif amplitude < 0.07 + threshold:
+        color = colors["light_sand"]
+    elif amplitude < 0.085 + threshold:
+        color = colors["sand"]
+    elif amplitude < 0.095 + threshold:
+        color = colors["dark_sand"]
+    elif amplitude < 0.16 + threshold:
+        color = colors["darkest_green"]
+    elif amplitude < 0.23 + threshold:
+        color = colors["dark_green"]
+    elif amplitude < 0.3 + threshold:
+        color = colors["green"]
+    elif amplitude < 0.335 + threshold:
+        color = colors["light_green"]
+    elif amplitude < 0.36 + threshold:
+        color = colors["dark_mountain"]
+    elif amplitude < 0.38 + threshold:
+        color = colors["mountain"]
+    elif amplitude < 0.415 + threshold:
+        color = colors["medium_mountain"]
+    elif amplitude < 0.495 + threshold:
+        color = colors["light_mountain"]
+    elif amplitude < 1 + threshold:
+        color = colors["snow"]
+
+    return color
+
+
 def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
 
@@ -82,64 +147,16 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
     lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
     seed: makes a whole different perlin map, and therefore a different "world"
     """
-    colors = {"light_blue": (27, 127, 196),
-              "medium_blue": (20, 103, 199),
-              "blue": (11, 74, 212),
-              "dark_blue": (11, 65, 181),
-              "light_sand": (205, 182, 115),
-              "sand": (199, 149, 95),
-              "dark_sand": (172, 130, 78),
-              "light_green": (106, 171, 56),
-              "green": (56, 158, 35),
-              "dark_green": (28, 140, 24),
-              "darkest_green": (35, 124, 24),
-              "dark_mountain": (90, 160, 79),
-              "mountain": (120, 120, 120),
-              "medium_mountain": (107, 107, 107),
-              "light_mountain": (89, 89, 89),
-              "snow": (255, 255, 255)}
+
     # gradient = create_round_gradient(map_width, map_height)
     game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)  # creates an "empty" map
     threshold = 0.5
     for i in range(map_width):
         for j in range(map_height):
-            val = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale, octaves=octaves,
-                           persistence=persistence, lacunarity=lacunarity,
-                           base=seed) + threshold)  # * gradient_map[i][j]
-            if val < -0.2 + threshold:
-                game_map[i][j] = colors["dark_blue"]
-            elif val < -0.075 + threshold:
-                game_map[i][j] = colors["blue"]
-            elif val < 0.0 + threshold:
-                game_map[i][j] = colors["medium_blue"]
-            elif val < 0.05 + threshold:
-                game_map[i][j] = colors["light_blue"]
-            # if val < 0.05:
-            #     map[i][j] = (0, 0, 100 + abs(300 * val))
-            elif val < 0.07 + threshold:
-                game_map[i][j] = colors["light_sand"]
-            elif val < 0.085 + threshold:
-                game_map[i][j] = colors["sand"]
-            elif val < 0.095 + threshold:
-                game_map[i][j] = colors["dark_sand"]
-            elif val < 0.16 + threshold:
-                game_map[i][j] = colors["darkest_green"]
-            elif val < 0.23 + threshold:
-                game_map[i][j] = colors["dark_green"]
-            elif val < 0.3 + threshold:
-                game_map[i][j] = colors["green"]
-            elif val < 0.335 + threshold:
-                game_map[i][j] = colors["light_green"]
-            elif val < 0.36 + threshold:
-                game_map[i][j] = colors["dark_mountain"]
-            elif val < 0.38 + threshold:
-                game_map[i][j] = colors["mountain"]
-            elif val < 0.415 + threshold:
-                game_map[i][j] = colors["medium_mountain"]
-            elif val < 0.495 + threshold:
-                game_map[i][j] = colors["light_mountain"]
-            elif val < 1 + threshold:
-                game_map[i][j] = colors["snow"]
+            amplitude = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale,
+                                 octaves=octaves, persistence=persistence, lacunarity=lacunarity,
+                                 base=seed) + threshold)  # * gradient_map[i][j]
+            game_map[i][j] = color_by_amplitude(amplitude, threshold)
     return game_map
 
 
