@@ -70,7 +70,7 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
                 time by not having to iterate over the entire matrix twice
 
     scale: determines at what "distance" to view the noisemap
-     octaves: the number of layers of noise stacked on each other
+    octaves: the number of layers of noise stacked on each other
     persistence: determines the height for each octave (z axis = persistence^(octave-1))
     lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
     seed: makes a whole different perlin map, and therefore a different "world"
@@ -92,7 +92,7 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
               "light_mountain": (89, 89, 89),
               "snow": (255, 255, 255)}
     # gradient = create_round_gradient(map_width, map_height)
-    game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)
+    game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)  # creates an "empty" map
     threshold = 0.5
     for i in range(map_width):
         for j in range(map_height):
@@ -139,7 +139,7 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
 """
 The following 4 functions allow movement within the terrain
  
-Logic: by removing a slice of width/height in a certain amount of pixels and calculating the next slice in the same size
+Logic: removes a slice of width/height of the matrix and calculates the next slice and stacks them
 
 Complexity: by removing and calculating slices instead of the entire map again this gains a massive performance boost
 
@@ -150,33 +150,37 @@ vertical_offset: the user's vertical coordinates displacement from the center (0
 
 
 def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
-    game_map = game_map[:, moving_speed:]
+    game_map = game_map[:, moving_speed:]  # slices the part the user moved from
     game_map = np.hstack(
         (game_map, create_colored_map(width, moving_speed, horizontal_coordinates=height + horizontal_offset,
                                       vertical_coordinates=vertical_offset)))
+    # calculates the new slice and joins it to the main map
     return game_map
 
 
 def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
-    game_map = game_map[:, :height - moving_speed]
+    game_map = game_map[:, :height - moving_speed]  # slices the part the user moved from
     game_map = np.hstack(
         (create_colored_map(width, moving_speed, horizontal_coordinates=-moving_speed + horizontal_offset,
                             vertical_coordinates=vertical_offset), game_map))
+    # calculates the new slice and joins it to the main map
     return game_map
 
 
 def move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
-    game_map = game_map[moving_speed:, :]
+    game_map = game_map[moving_speed:, :]  # slices the part the user moved from
     game_map = np.vstack(
         (game_map, create_colored_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
                                       vertical_coordinates=width + vertical_offset)))
+    # calculates the new slice and joins it to the main map
     return game_map
 
 
 def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
-    game_map = game_map[:width - moving_speed, :]
+    game_map = game_map[:width - moving_speed, :]  # slices the part the user moved from
     game_map = np.vstack((create_colored_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
                                              vertical_coordinates=-moving_speed + vertical_offset), game_map))
+    # calculates the new slice and joins it to the main map
     return game_map
 
 
@@ -187,6 +191,9 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
 
     width: width resolution in pixels
     height: height resolution in pixels
+    moving_speed: moving speed in pixels per moving action
+    vertical_offset: variable following the user's vertical coordinates displacement from the center (0, 0)
+    horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
     """
     game_map = create_colored_map(width, height)  # create_gradient_map(width, height)
     # im = Image.fromarray(game_map)
@@ -226,7 +233,7 @@ def main():
            add objective?, find usage
     """
     width, height = 800, 600  # resolution in pixels
-    moving_speed = 40  # in pixels
+    moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset = 0  # variable following the user's horizontal coordinates displacement from the center (0, 0)
 
