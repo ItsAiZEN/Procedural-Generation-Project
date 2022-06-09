@@ -1,3 +1,8 @@
+"""
+This project is about making terrain using procedural generation utilizing perlin noise and other techniques.
+Working towards making both infinite and finite "worlds" based on different seeds generation
+"""
+
 import math
 import sys
 
@@ -9,13 +14,15 @@ from noise import pnoise2
 # from PIL import Image
 
 """
-This project is about making terrain using procedural generation utilizing perlin noise and other techniques.
-Working towards making both infinite and finite "worlds" based on different seeds generation
-
-WIP: adding a menu, experimenting with voronoi diagrams instead of each pixel coloring (will add certain style to the
-     terrain and might improve running time, also trying to differentiate between an infinite map and a finite map,
-     the finite map should use the round gradient and might add several special details that are more complex to add
-     to an infinite map
+TODO:   1. add a menu, 
+        2. try voronoi diagrams instead of pixel coloring
+        3. differentiate between an infinite map and a finite map
+        4. add UI, let users choose lacunarity, octaves, seed and so on 
+        5. add ability to save, both seed and coordinates and of resolution and so forth
+        6. add rivers and trails
+        7. implement round gradient
+        8. add biomes?, seasons/day night cycle?
+        9. add path finding?, add objective?, find usage?
 """
 
 
@@ -227,11 +234,6 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
 
 
 def main():
-    """
-     TODO: Make menu, let user choose seed and options, add world saving option, make tiled?(voronoi diagram),
-           add rivers and trails?, biomes?, seasons/day night cycle?, add round gradient, add path finding?,
-           add objective?, find usage
-    """
     width, height = 800, 600  # resolution in pixels
     moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
