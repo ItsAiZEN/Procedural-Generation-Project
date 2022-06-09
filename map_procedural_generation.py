@@ -38,10 +38,10 @@ def create_perlin_map():
     Creates a 2D matrix with values between -0.5 and 0.5 using perlin noise
 
     scale: determines at what "distance" to view the noisemap
-    octaves: mean the number of passes/layers of the algorithm. Each pass adds more detail
-    persistence: determines how much each octave contributes to the overall shape (adjusts amplitude)
-    lacunarity: determines how much detail is added or removed at each octave (adjusts frequency)
-    seed: makes a whole different perlin map, and there for a different "world"
+    octaves: the number of layers of noise stacked on each other
+    persistence: determines the height for each octave (z axis = persistence^(octave-1))
+    lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
+    seed: makes a whole different perlin map, and therefore a different "world"
     """
     width, height = 800, 600
     scale = 100.0
@@ -70,10 +70,10 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
                 time by not having to iterate over the entire matrix twice
 
     scale: determines at what "distance" to view the noisemap
-    octaves: mean the number of passes/layers of the algorithm. Each pass adds more detail
-    persistence: determines how much each octave contributes to the overall shape (adjusts amplitude)
-    lacunarity: determines how much detail is added or removed at each octave (adjusts frequency)
-    seed: makes a whole different perlin map, and there for a different "world"
+     octaves: the number of layers of noise stacked on each other
+    persistence: determines the height for each octave (z axis = persistence^(octave-1))
+    lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
+    seed: makes a whole different perlin map, and therefore a different "world"
     """
     colors = {"light_blue": (27, 127, 196),
               "medium_blue": (20, 103, 199),
