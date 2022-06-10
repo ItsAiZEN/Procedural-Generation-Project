@@ -289,7 +289,7 @@ def finite_map_loop(width, height):
     horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
     """
     scale = 100
-    octaves = 6
+    octaves = 4
     persistence = 0.5
     lacunarity = 2.0
     seed = 0
@@ -321,6 +321,18 @@ def finite_map_loop(width, height):
                 if events.key == pygame.K_LEFT:
                     lacunarity = round(lacunarity - 0.1, 1)
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_w:
+                    octaves += 1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_s:
+                    octaves -= 1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_d:
+                    seed += 1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_a:
+                    seed -= 1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
         font = pygame.font.SysFont('arial bold', 24)
         octaves_text = font.render('octaves ' + str(octaves), True, (255, 255, 255))
         lacunarity_text = font.render('lacunarity ' + str(lacunarity), True, (255, 255, 255))
@@ -336,7 +348,7 @@ def finite_map_loop(width, height):
 
 
 def main():
-    width, height = 500, 500  # resolution in pixels
+    width, height = 600, 600  # resolution in pixels
     moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset = 0  # variable following the user's horizontal coordinates displacement from the center (0, 0)
