@@ -32,11 +32,16 @@ def create_round_gradient(map_width=800, map_height=600):
 
     Logic: calculating the distance from the center and inverting them
     """
+    min_edge = min(map_width, map_height)  # might be a better constant than center_to_edge for wider screens
+    center_to_edge = (math.sqrt(map_width ** 2 + map_height ** 2) // 2)  # utilized triangle geometry, the median on
+    # the hypotenuse of a right triangle divides the triangle into two isosceles triangles, because the median equals
+    # one half the hypotenuse
     gradient_map = np.zeros((map_width, map_height))
+    map_center = (map_width // 2, map_height // 2)
     for i in range(map_width):
         for j in range(map_height):
-            gradient_map[i][j] = (
-                abs(1 - (math.dist((map_width // 2, map_height // 2), (i, j))) / (max(map_width, map_height) // 2)))
+            gradient_map[i][j] = abs(1 - (math.dist(map_center, (i, j)) / center_to_edge)) ** 2
+
     return gradient_map
 
 
@@ -162,7 +167,8 @@ def create_finite_map(map_width=800, map_height=600, horizontal_coordinates=0, v
                       octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
 
     """
-    Creates a 2D matrix with RGB values, representing an image of terrain
+    Creates a 2D matrix with RGB values, representing an image of terrain while utilizing a round gradient to surround
+    the terrain with water
 
     Logic: assigns a value for each pixel using 2D perlin noise and then assigns a color to the pixel according
            to the value
@@ -184,7 +190,7 @@ def create_finite_map(map_width=800, map_height=600, horizontal_coordinates=0, v
         for j in range(map_height):
             amplitude = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale,
                                  octaves=octaves, persistence=persistence, lacunarity=lacunarity,
-                                 base=seed) + threshold) * gradient[i][j]
+                                 base=seed) + 0.5) * gradient[i][j]
             game_map[i][j] = color_by_amplitude(amplitude, threshold)
     return game_map
 
@@ -280,7 +286,7 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
 
 
 def main():
-    width, height = 800, 600  # resolution in pixels
+    width, height = 1000, 1000  # resolution in pixels
     moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset = 0  # variable following the user's horizontal coordinates displacement from the center (0, 0)
