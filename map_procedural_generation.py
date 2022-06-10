@@ -20,9 +20,8 @@ TODO:   1. add a menu, let choose resolution and load worlds, choose mode
         4. add UI, let users choose lacunarity, octaves, seed and so on 
         5. add ability to save, both seed and coordinates, resolution and more
         6. add rivers and trails (using path finding/gradient decent or voronoi edges?)
-        7. implement round gradient
-        8. add biomes?, seasons/day night cycle?
-        9. add path finding?, add objective?, find usage?
+        7. add biomes?, seasons/day night cycle?
+        8. add path finding?, add objective?, find usage?
 """
 
 
@@ -134,8 +133,7 @@ def color_by_amplitude(amplitude, threshold):
 
 
 def create_infinite_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
-                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
-
+                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):
     """
     Creates a 2D matrix with RGB values, representing an image of terrain
 
@@ -163,9 +161,7 @@ def create_infinite_map(map_width=800, map_height=600, horizontal_coordinates=0,
     return game_map
 
 
-def create_finite_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
-                      octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
-
+def create_finite_map(gradient, map_width, map_height, octaves, persistence, lacunarity, seed, scale):
     """
     Creates a 2D matrix with RGB values, representing an image of terrain while utilizing a round gradient to surround
     the terrain with water
@@ -182,14 +178,11 @@ def create_finite_map(map_width=800, map_height=600, horizontal_coordinates=0, v
     lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
     seed: makes a whole different perlin map, and therefore a different "world"
     """
-
-    gradient = create_round_gradient(map_width, map_height)
     game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)  # creates an "empty" map
     threshold = 0.15
     for i in range(map_width):
         for j in range(map_height):
-            amplitude = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale,
-                                 octaves=octaves, persistence=persistence, lacunarity=lacunarity,
+            amplitude = (pnoise2(i / scale, j / scale, octaves=octaves, persistence=persistence, lacunarity=lacunarity,
                                  base=seed) + 0.5) * gradient[i][j]
             game_map[i][j] = color_by_amplitude(amplitude, threshold)
     return game_map
@@ -243,7 +236,7 @@ def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical
     return game_map
 
 
-def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
+def infinite_map_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
     """
     Creates a window using the pygame module, then calls the relevant functions in order to make a terrain map and
     allowing movement within the terrain
@@ -254,7 +247,7 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
     vertical_offset: variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
     """
-    game_map = create_finite_map(width, height)  # create_gradient_map(width, height)
+    game_map = create_infinite_map(width, height)  # create_gradient_map(width, height)
     # im = Image.fromarray(game_map)
     # im.show()
     pygame.init()
@@ -285,13 +278,60 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
         pygame.display.flip()
 
 
+def finite_map_loop(width, height):
+    """
+    Creates a window using the pygame module, then calls the relevant functions in order to make a terrain map and
+    allowing changing values within the terrain
+
+    width: width resolution in pixels
+    height: height resolution in pixels
+    vertical_offset: variable following the user's vertical coordinates displacement from the center (0, 0)
+    horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
+    """
+    scale = 100
+    octaves = 6
+    persistence = 0.5
+    lacunarity = 2.0
+    seed = 0
+    gradient = create_round_gradient(width, height)
+    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+    # im = Image.fromarray(game_map)
+    # im.show()
+    pygame.init()
+    display = pygame.display.set_mode((width, height))
+    pygame.display.set_caption('World explorer')
+    while True:
+        for events in pygame.event.get():
+            if events.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if events.type == pygame.KEYDOWN:
+                if events.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+                if events.key == pygame.K_UP:
+                    persistence += 0.1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_DOWN:
+                    persistence -= 0.1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_RIGHT:
+                    lacunarity += 0.1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+                if events.key == pygame.K_LEFT:
+                    lacunarity -= 0.1
+                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+        pygame.pixelcopy.array_to_surface(display, game_map)
+        pygame.display.flip()
+
+
 def main():
-    width, height = 1000, 1000  # resolution in pixels
+    width, height = 500, 500  # resolution in pixels
     moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset = 0  # variable following the user's horizontal coordinates displacement from the center (0, 0)
 
-    game_loop(width, height, moving_speed, vertical_offset, horizontal_offset)
+    finite_map_loop(width, height)
 
 
 if __name__ == "__main__":
