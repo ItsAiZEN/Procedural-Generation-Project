@@ -310,18 +310,28 @@ def finite_map_loop(width, height):
                     pygame.quit()
                     sys.exit()
                 if events.key == pygame.K_UP:
-                    persistence += 0.1
+                    persistence = round(persistence + 0.1, 1)
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
                 if events.key == pygame.K_DOWN:
-                    persistence -= 0.1
+                    persistence = round(persistence - 0.1, 1)
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
                 if events.key == pygame.K_RIGHT:
-                    lacunarity += 0.1
+                    lacunarity = round(lacunarity + 0.1, 1)
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
                 if events.key == pygame.K_LEFT:
-                    lacunarity -= 0.1
+                    lacunarity = round(lacunarity - 0.1, 1)
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
+        font = pygame.font.SysFont('arial bold', 24)
+        octaves_text = font.render('octaves ' + str(octaves), True, (255, 255, 255))
+        lacunarity_text = font.render('lacunarity ' + str(lacunarity), True, (255, 255, 255))
+        persistence_text = font.render('persistence ' + str(persistence), True, (255, 255, 255))
+        seed_text = font.render('seed ' + str(seed), True, (255, 255, 255))
         pygame.pixelcopy.array_to_surface(display, game_map)
+        display.blit(octaves_text, (0, height - 20))
+        display.blit(lacunarity_text, (135, height - 20))
+        display.blit(persistence_text, (270, height - 20))
+        display.blit(seed_text, (405, height - 20))
+
         pygame.display.flip()
 
 
