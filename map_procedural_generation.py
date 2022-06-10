@@ -23,7 +23,6 @@ TODO:   1. add a menu, let choose resolution and load worlds, choose mode
         7. implement round gradient
         8. add biomes?, seasons/day night cycle?
         9. add path finding?, add objective?, find usage?
-        10. split coloring into an individual function
 """
 
 
@@ -129,8 +128,8 @@ def color_by_amplitude(amplitude, threshold):
     return color
 
 
-def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
-                       octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
+def create_infinite_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
+                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
 
     """
     Creates a 2D matrix with RGB values, representing an image of terrain
@@ -148,14 +147,44 @@ def create_colored_map(map_width=800, map_height=600, horizontal_coordinates=0, 
     seed: makes a whole different perlin map, and therefore a different "world"
     """
 
-    # gradient = create_round_gradient(map_width, map_height)
     game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)  # creates an "empty" map
     threshold = 0.5
     for i in range(map_width):
         for j in range(map_height):
             amplitude = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale,
                                  octaves=octaves, persistence=persistence, lacunarity=lacunarity,
-                                 base=seed) + threshold)  # * gradient_map[i][j]
+                                 base=seed) + threshold)
+            game_map[i][j] = color_by_amplitude(amplitude, threshold)
+    return game_map
+
+
+def create_finite_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
+                      octaves=5, persistence=0.55, lacunarity=3.2, seed=0):  # gradient_map
+
+    """
+    Creates a 2D matrix with RGB values, representing an image of terrain
+
+    Logic: assigns a value for each pixel using 2D perlin noise and then assigns a color to the pixel according
+           to the value
+
+    Complexity: creating the matrix by calculating the perlin noise values and assigning colors in the same loop saves
+                time by not having to iterate over the entire matrix twice
+
+    scale: determines at what "distance" to view the noisemap
+    octaves: the number of layers of noise stacked on each other
+    persistence: determines the height for each octave (z axis = persistence^(octave-1))
+    lacunarity: determines the "spread" (adjusts frequency) for each octave (x,y axes) (scale = lacunarity^(octave-1))
+    seed: makes a whole different perlin map, and therefore a different "world"
+    """
+
+    gradient = create_round_gradient(map_width, map_height)
+    game_map = np.empty((map_width, map_height) + (3,), dtype=np.uint8)  # creates an "empty" map
+    threshold = 0.15
+    for i in range(map_width):
+        for j in range(map_height):
+            amplitude = (pnoise2((i + vertical_coordinates) / scale, (j + horizontal_coordinates) / scale,
+                                 octaves=octaves, persistence=persistence, lacunarity=lacunarity,
+                                 base=seed) + threshold) * gradient[i][j]
             game_map[i][j] = color_by_amplitude(amplitude, threshold)
     return game_map
 
@@ -176,8 +205,8 @@ vertical_offset: the user's vertical coordinates displacement from the center (0
 def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[:, moving_speed:]  # slices the part the user moved from
     game_map = np.hstack(
-        (game_map, create_colored_map(width, moving_speed, horizontal_coordinates=height + horizontal_offset,
-                                      vertical_coordinates=vertical_offset)))
+        (game_map, create_infinite_map(width, moving_speed, horizontal_coordinates=height + horizontal_offset,
+                                       vertical_coordinates=vertical_offset)))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -185,8 +214,8 @@ def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical
 def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[:, :height - moving_speed]  # slices the part the user moved from
     game_map = np.hstack(
-        (create_colored_map(width, moving_speed, horizontal_coordinates=-moving_speed + horizontal_offset,
-                            vertical_coordinates=vertical_offset), game_map))
+        (create_infinite_map(width, moving_speed, horizontal_coordinates=-moving_speed + horizontal_offset,
+                             vertical_coordinates=vertical_offset), game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -194,16 +223,16 @@ def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_o
 def move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[moving_speed:, :]  # slices the part the user moved from
     game_map = np.vstack(
-        (game_map, create_colored_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                      vertical_coordinates=width + vertical_offset)))
+        (game_map, create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
+                                       vertical_coordinates=width + vertical_offset)))
     # calculates the new slice and joins it to the main map
     return game_map
 
 
 def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[:width - moving_speed, :]  # slices the part the user moved from
-    game_map = np.vstack((create_colored_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                             vertical_coordinates=-moving_speed + vertical_offset), game_map))
+    game_map = np.vstack((create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
+                                              vertical_coordinates=-moving_speed + vertical_offset), game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -219,7 +248,7 @@ def game_loop(width, height, moving_speed, vertical_offset, horizontal_offset):
     vertical_offset: variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
     """
-    game_map = create_colored_map(width, height)  # create_gradient_map(width, height)
+    game_map = create_finite_map(width, height)  # create_gradient_map(width, height)
     # im = Image.fromarray(game_map)
     # im.show()
     pygame.init()
