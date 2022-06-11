@@ -200,37 +200,38 @@ vertical_offset: the user's vertical coordinates displacement from the center (0
 """
 
 
-def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
+def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset, seed):
     game_map = game_map[:, moving_speed:]  # slices the part the user moved from
     game_map = np.hstack(
         (game_map, create_infinite_map(width, moving_speed, horizontal_coordinates=height + horizontal_offset,
-                                       vertical_coordinates=vertical_offset)))
+                                       vertical_coordinates=vertical_offset, seed=seed)))
     # calculates the new slice and joins it to the main map
     return game_map
 
 
-def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
+def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset, seed):
     game_map = game_map[:, :height - moving_speed]  # slices the part the user moved from
     game_map = np.hstack(
         (create_infinite_map(width, moving_speed, horizontal_coordinates=-moving_speed + horizontal_offset,
-                             vertical_coordinates=vertical_offset), game_map))
+                             vertical_coordinates=vertical_offset, seed=seed), game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
 
-def move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
+def move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset, seed):
     game_map = game_map[moving_speed:, :]  # slices the part the user moved from
     game_map = np.vstack(
         (game_map, create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                       vertical_coordinates=width + vertical_offset)))
+                                       vertical_coordinates=width + vertical_offset, seed=seed)))
     # calculates the new slice and joins it to the main map
     return game_map
 
 
-def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
+def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset, seed):
     game_map = game_map[:width - moving_speed, :]  # slices the part the user moved from
     game_map = np.vstack((create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                              vertical_coordinates=-moving_speed + vertical_offset), game_map))
+                                              vertical_coordinates=-moving_speed + vertical_offset, seed=seed),
+                          game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -249,6 +250,7 @@ def infinite_map_loop(width, height, moving_speed, vertical_offset, horizontal_o
     game_map = create_infinite_map(width, height, lacunarity=2.0, persistence=0.5)
     # im = Image.fromarray(game_map)
     # im.show()
+    seed = 0
     pygame.init()
     display = pygame.display.set_mode((width, height))
     pygame.display.set_caption('World explorer')
@@ -262,18 +264,34 @@ def infinite_map_loop(width, height, moving_speed, vertical_offset, horizontal_o
                     pygame.quit()
                     sys.exit()
                 if events.key == pygame.K_UP:
-                    game_map = move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset)
+                    game_map = move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_offset, seed)
                     horizontal_offset -= moving_speed
                 if events.key == pygame.K_DOWN:
-                    game_map = move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset)
+                    game_map = move_down(width, height, moving_speed, game_map, horizontal_offset, vertical_offset,
+                                         seed)
                     horizontal_offset += moving_speed
                 if events.key == pygame.K_RIGHT:
-                    game_map = move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset)
+                    game_map = move_right(width, height, moving_speed, game_map, horizontal_offset, vertical_offset,
+                                          seed)
                     vertical_offset += moving_speed
                 if events.key == pygame.K_LEFT:
-                    game_map = move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset)
+                    game_map = move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset,
+                                         seed)
                     vertical_offset -= moving_speed
+                if events.key == pygame.K_w:
+                    seed += 1
+                    horizontal_offset = 0
+                    vertical_offset = 0
+                    game_map = create_infinite_map(width, height, horizontal_offset, vertical_offset, seed=seed)
+                if events.key == pygame.K_s:
+                    seed -= 1
+                    horizontal_offset = 0
+                    vertical_offset = 0
+                    game_map = create_infinite_map(width, height, horizontal_offset, vertical_offset, seed=seed)
+        font = pygame.font.SysFont('arial bold', 30)
+        seed_text = font.render('SEED: ' + str(seed), True, (255, 255, 255))
         pygame.pixelcopy.array_to_surface(display, game_map)
+        display.blit(seed_text, (10, height - 25))
         pygame.display.flip()
 
 
@@ -318,7 +336,6 @@ def finite_map_loop(width, height):
         seed_text = font.render('SEED: ' + str(seed), True, (255, 255, 255))
         pygame.pixelcopy.array_to_surface(display, game_map)
         display.blit(seed_text, (10, height - 25))
-
         pygame.display.flip()
 
 
