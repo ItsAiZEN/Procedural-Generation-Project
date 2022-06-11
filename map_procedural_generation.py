@@ -133,7 +133,7 @@ def color_by_amplitude(amplitude, threshold):
 
 
 def create_infinite_map(map_width=800, map_height=600, horizontal_coordinates=0, vertical_coordinates=0, scale=300,
-                        octaves=5, persistence=0.55, lacunarity=3.2, seed=0):
+                        octaves=5, persistence=0.6, lacunarity=2.0, seed=0):
     """
     Creates a 2D matrix with RGB values, representing an image of terrain
 
@@ -205,7 +205,7 @@ def move_down(width, height, moving_speed, game_map, horizontal_offset, vertical
     game_map = game_map[:, moving_speed:]  # slices the part the user moved from
     game_map = np.hstack(
         (game_map, create_infinite_map(width, moving_speed, horizontal_coordinates=height + horizontal_offset,
-                                       vertical_coordinates=vertical_offset, lacunarity=2.0, persistence=0.5)))
+                                       vertical_coordinates=vertical_offset)))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -214,7 +214,7 @@ def move_up(width, height, moving_speed, game_map, horizontal_offset, vertical_o
     game_map = game_map[:, :height - moving_speed]  # slices the part the user moved from
     game_map = np.hstack(
         (create_infinite_map(width, moving_speed, horizontal_coordinates=-moving_speed + horizontal_offset,
-                             vertical_coordinates=vertical_offset, lacunarity=2.0, persistence=0.5), game_map))
+                             vertical_coordinates=vertical_offset), game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -223,7 +223,7 @@ def move_right(width, height, moving_speed, game_map, horizontal_offset, vertica
     game_map = game_map[moving_speed:, :]  # slices the part the user moved from
     game_map = np.vstack(
         (game_map, create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                       vertical_coordinates=width + vertical_offset, lacunarity=2.0, persistence=0.5)))
+                                       vertical_coordinates=width + vertical_offset)))
     # calculates the new slice and joins it to the main map
     return game_map
 
@@ -231,8 +231,7 @@ def move_right(width, height, moving_speed, game_map, horizontal_offset, vertica
 def move_left(width, height, moving_speed, game_map, horizontal_offset, vertical_offset):
     game_map = game_map[:width - moving_speed, :]  # slices the part the user moved from
     game_map = np.vstack((create_infinite_map(moving_speed, height, horizontal_coordinates=horizontal_offset,
-                                              vertical_coordinates=-moving_speed + vertical_offset, lacunarity=2.0,
-                                              persistence=0.5), game_map))
+                                              vertical_coordinates=-moving_speed + vertical_offset), game_map))
     # calculates the new slice and joins it to the main map
     return game_map
 
