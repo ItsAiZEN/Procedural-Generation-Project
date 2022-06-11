@@ -39,7 +39,7 @@ def create_round_gradient(map_width=800, map_height=600):
     map_center = (map_width // 2, map_height // 2)
     for i in range(map_width):
         for j in range(map_height):
-            gradient_map[i][j] = abs(1 - (math.dist(map_center, (i, j)) / center_to_edge)) ** 2
+            gradient_map[i][j] = abs(1 - (math.dist(map_center, (i, j)) / center_to_edge)) ** 1.5
 
     return gradient_map
 
@@ -288,8 +288,8 @@ def finite_map_loop(width, height):
     vertical_offset: variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset: variable following the user's horizontal coordinates displacement from the center (0, 0)
     """
-    scale = 100
-    octaves = 4
+    scale = 200
+    octaves = 5
     persistence = 0.5
     lacunarity = 2.0
     seed = 0
@@ -310,45 +310,21 @@ def finite_map_loop(width, height):
                     pygame.quit()
                     sys.exit()
                 if events.key == pygame.K_UP:
-                    persistence = round(persistence + 0.1, 1)
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_DOWN:
-                    persistence = round(persistence - 0.1, 1)
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_RIGHT:
-                    lacunarity = round(lacunarity + 0.1, 1)
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_LEFT:
-                    lacunarity = round(lacunarity - 0.1, 1)
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_w:
-                    octaves += 1
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_s:
-                    octaves -= 1
-                    game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_d:
                     seed += 1
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-                if events.key == pygame.K_a:
+                if events.key == pygame.K_DOWN:
                     seed -= 1
                     game_map = create_finite_map(gradient, width, height, octaves, persistence, lacunarity, seed, scale)
-        font = pygame.font.SysFont('arial bold', 24)
-        octaves_text = font.render('octaves ' + str(octaves), True, (255, 255, 255))
-        lacunarity_text = font.render('lacunarity ' + str(lacunarity), True, (255, 255, 255))
-        persistence_text = font.render('persistence ' + str(persistence), True, (255, 255, 255))
-        seed_text = font.render('seed ' + str(seed), True, (255, 255, 255))
+        font = pygame.font.SysFont('arial bold', 30)
+        seed_text = font.render('SEED: ' + str(seed), True, (255, 255, 255))
         pygame.pixelcopy.array_to_surface(display, game_map)
-        display.blit(octaves_text, (0, height - 20))
-        display.blit(lacunarity_text, (135, height - 20))
-        display.blit(persistence_text, (270, height - 20))
-        display.blit(seed_text, (405, height - 20))
+        display.blit(seed_text, (10, height - 25))
 
         pygame.display.flip()
 
 
 def main():
-    width, height = 600, 600  # resolution in pixels
+    width, height = 1000, 1000  # resolution in pixels
     moving_speed = 40  # moving speed in pixels per moving action
     vertical_offset = 0  # variable following the user's vertical coordinates displacement from the center (0, 0)
     horizontal_offset = 0  # variable following the user's horizontal coordinates displacement from the center (0, 0)
