@@ -14,14 +14,13 @@ from noise import pnoise2
 # from PIL import Image
 
 """
-TODO:   1. add a menu, let choose resolution and load worlds, choose mode
-        2. try voronoi diagrams instead of pixel coloring
-        3. differentiate between an infinite map and a finite map
-        4. add UI, let users choose lacunarity, octaves, seed and so on 
-        5. add ability to save, both seed and coordinates, resolution and more
-        6. add rivers and trails (using path finding/gradient decent or voronoi edges?)
+TODO:   1. try voronoi diagrams instead of pixel coloring
+        2. add ability to change seed in infinite world
+        3. add a menu, let choose resolution and load worlds, choose mode
+        4. add ability to save, both seed and coordinates, resolution and more
+        5. add rivers and trails (using path finding/gradient decent or voronoi edges?)
+        6. add path finding?, add objective?, find usage?
         7. add biomes?, seasons/day night cycle?
-        8. add path finding?, add objective?, find usage?
 """
 
 
